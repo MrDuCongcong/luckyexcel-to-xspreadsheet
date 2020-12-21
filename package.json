@@ -1,0 +1,19 @@
+{
+  "name": "luckyexecl-to-xspreadsheet",
+  "version": "1.0.0",
+  "description": "Luckyexcel读取的excel数据格式转化为x-spreadsheet的格式",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "excel",
+    "spreadsheet",
+    "luckyexcel"
+  ],
+  "author": "杜聪聪（MrDu）",
+  "license": "MIT",
+  "devDependencies": {
+    "rollup": "^2.34.2"
+  }
+}
