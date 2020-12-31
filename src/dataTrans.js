@@ -1,6 +1,7 @@
 import colTrans from './utils/colTrans';
 
 const sheet_to_data = function (luckyExcel) {
+     debugger;
      const spreadData = luckyExcel.sheets.map(sheet => {
         const merges = transMergeData(sheet);
         const tempData = parseCellData(sheet);
@@ -17,20 +18,62 @@ const sheet_to_data = function (luckyExcel) {
     return spreadData;
 }
 
+const sheet_to_config = function(luckyExcel) {
+    const defaultRowLen = 100;  // 默认最大行数
+    const defaultColLen = 26;   // 默认最大列数
+    
+
+    const tempRow = {};
+    const tempCol = {};
+
+
+    const rowArr = []; 
+    const colArr = [];
+    luckyExcel.sheets.forEach((sheet) => {
+
+        sheet.celldata.forEach(item => {
+            rowArr.push(item.r);
+            colArr.push(item.c);
+        });
+
+        tempRow.height = sheet.defaultRowHeight;
+        tempCol.width = sheet.defaultColWidth;
+    })
+ 
+    const rowMax = Math.max(...rowArr);
+    const colMax = Math.max(...colArr);
+  
+    tempRow.len = defaultRowLen > rowMax ? defaultRowLen : rowMax;
+    tempCol.len = defaultColLen > colMax ? defaultColLen : colMax;
+
+    return {
+        row: tempRow,
+        col: tempCol,
+    };
+}
+
+
+
 const transMergeData = function(sheet) {
     const merge = sheet.config?.merge || {};
     const tempMerges = Object.keys(merge).map((key) => {
         const item = merge[key];
         /**
         * 由于x-spreadsheet的merge字段的行和列的下标1开始，而luckyexcel读取的merge字段的行和列的下标是从0开始。
-        *  同时colTrans将列的字母和下标相互转化时也从1开始。
+        *  同时colTrans将列的字母和下标相互转化时也从0开始。
         */
-        return `${ colTrans.excelColIndexToStr(item.c + 1) }${item.r + 1}:${ colTrans.excelColIndexToStr(item.c + item.cs) }${item.r + item.rs}` 
+        return `${ colTrans.excelColIndexToStr(item.c) }${item.r + 1}:${ colTrans.excelColIndexToStr(item.c + item.cs - 1) }${item.r + item.rs}` 
     })
     
     return tempMerges;
 }
 
+
+/**
+ * 将luckyexcel读取的数据格式转换为x-spreadsheet的数据格式。
+ * x-spreadsheet的格式可以从data_proxy的getData()方法获取
+ * @param {*} sheet 
+ */
 const parseCellData = function(sheet) {
     const tempRows = {};
     const tempCols = {};
@@ -41,11 +84,20 @@ const parseCellData = function(sheet) {
     const cellData= sheet.celldata;
     const merge = sheet.config?.merge || {};
     const columnlen = sheet.config?.columnlen || {};
+    const rowlen = sheet.config?.rowlen || {};
     const borderInfo = sheet.config?.borderInfo || [];
 
     cellData.forEach((item) => {
         const row = tempRows[item.r] || {};
         tempRows[item.r] = row;
+  
+         
+        /**
+         * 获取行高度
+         */
+        if (rowlen[item.r] && !row.height) {
+            row.height = rowlen[item.r];
+        }
 
         const cells = row.cells || {};
         row.cells = cells;
@@ -82,6 +134,9 @@ const parseCellData = function(sheet) {
          * cols属性获取
          */
         tempCols[item.c] = { width: columnlen[item.c] };
+
+
+
     });
 
     /***
@@ -249,5 +304,6 @@ const parseBorder = function(style, borderStyle) {
 }
 
 export default {
-    sheet_to_data
+    sheet_to_data,
+    sheet_to_config,
 }

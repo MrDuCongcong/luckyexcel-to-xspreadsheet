@@ -13,26 +13,30 @@ const excelColStrToNum = function(colStr) {
 
     return colIndex;
 }
-
 const excelColIndexToStr = function(colIndex) {
-    if (isNaN(colIndex) || (colIndex < 1 || colIndex > 26)   ) {
+    if (isNaN(colIndex) || colIndex < 0 ) {
         return null;
     }
 
+	const ordA = 'A'.charCodeAt(0);
+ 
+	const ordZ = 'Z'.charCodeAt(0);
+ 
+    const len = ordZ - ordA + 1;
+ 
     let colStr = '';
-
-    do {
-        colStr = String.fromCharCode(colIndex % 26 + 64) + colStr;
-        
-        if (colIndex % 26 > 0) {
-            colIndex = colIndex - colIndex % 26;
-        } else if (colIndex % 26 === 0) {
-            colIndex = colIndex - 26;
-        }
-
-    } while (colIndex > 0);
-
-    return colStr;
+ 
+ 
+ 
+	while( colIndex >= 0 ) {
+ 
+		colStr = String.fromCharCode(colIndex % len + ordA) + colStr;
+ 
+		colIndex = Math.floor(colIndex / len) - 1;
+ 
+	}
+ 
+	return colStr;
 }
 
 export default {
