@@ -1,7 +1,6 @@
 import colTrans from './utils/colTrans';
 
 const sheet_to_data = function (luckyExcel) {
-     debugger;
      const spreadData = luckyExcel.sheets.map(sheet => {
         const merges = transMergeData(sheet);
         const tempData = parseCellData(sheet);
@@ -19,32 +18,46 @@ const sheet_to_data = function (luckyExcel) {
 }
 
 const sheet_to_config = function(luckyExcel) {
-    const defaultRowLen = 100;  // 默认最大行数
-    const defaultColLen = 26;   // 默认最大列数
-    
+    const minRowLen = 100;  // 默认最小行数
+    const minColLen = 26;   // 默认最小列数
+
+    const maxRowLen = 5000; // 默认最大行数
+    const maxColLen = 1000; // 默认最大列数
+
 
     const tempRow = {};
     const tempCol = {};
 
 
-    const rowArr = []; 
-    const colArr = [];
+    let rowLen = 0;
+    let colLen = 0;
     luckyExcel.sheets.forEach((sheet) => {
 
         sheet.celldata.forEach(item => {
-            rowArr.push(item.r);
-            colArr.push(item.c);
+            rowLen = item.r > rowLen ? item.r : rowLen;
+            colLen = item.c > colLen ? item.c : colLen;
         });
 
         tempRow.height = sheet.defaultRowHeight;
         tempCol.width = sheet.defaultColWidth;
     })
- 
-    const rowMax = Math.max(...rowArr);
-    const colMax = Math.max(...colArr);
   
-    tempRow.len = defaultRowLen > rowMax ? defaultRowLen : rowMax;
-    tempCol.len = defaultColLen > colMax ? defaultColLen : colMax;
+    if (rowLen >=  minRowLen && rowLen <=  maxRowLen) {
+        tempRow.len = rowLen;
+    } else if (rowLen < minRowLen) {
+        tempRow.len = minRowLen;
+    } else if (rowLen > maxRowLen) {
+        tempRow.len = maxRowLen;
+    }
+
+      
+    if (colLen >=  minColLen && colLen <=  maxColLen) {
+        tempCol.len = colLen;
+    } else if (colLen < minColLen) {
+        tempCol.len = minColLen;
+    } else if (colLen > maxColLen) {
+        tempCol.len = maxColLen;
+    }
 
     return {
         row: tempRow,
